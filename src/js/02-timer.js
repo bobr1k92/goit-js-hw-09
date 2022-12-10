@@ -25,6 +25,7 @@ const options = {
         timeout: 2000,
       });
       refs.btnStart.disabled = true;
+
     } else {
       refs.btnStart.disabled = false;
     }
