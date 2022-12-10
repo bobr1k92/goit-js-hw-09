@@ -11,6 +11,7 @@ const refs = {
   seconds: document.querySelector('span[data-seconds]'),
 }
 
+refs.btnStart.disabled = true;
 
 const options = {
   enableTime: true,
@@ -18,7 +19,15 @@ const options = {
   defaultDate: new Date(),
   minuteIncrement: 1,
   onClose(selectedDates) {
-    console.log(selectedDates[0]);
+    if (selectedDates[0] - new Date() <= 0) {
+      Notify.failure("Please choose a date in the future", {
+        position: 'right-bottom',
+        timeout: 2000,
+      });
+      refs.btnStart.disabled = true;
+    } else {
+      refs.btnStart.disabled = false;
+    }
   },
 };
 
@@ -31,10 +40,10 @@ flatpickr(refs.input, options);
     const hour = minute * 60;
     const day = hour * 24;
   
-    const days = Math.floor(ms / day);
-    const hours = Math.floor((ms % day) / hour);
-    const minutes = Math.floor(((ms % day) % hour) / minute);
-    const seconds = Math.floor((((ms % day) % hour) % minute) / second);
+    const days = addLeadingZero(Math.floor(ms / day));
+    const hours = addLeadingZero(Math.floor((ms % day) / hour));
+    const minutes = addLeadingZero(Math.floor(((ms % day) % hour) / minute));
+    const seconds = addLeadingZero(Math.floor((((ms % day) % hour) % minute) / second));
   
     return { days, hours, minutes, seconds };
   }
@@ -43,5 +52,32 @@ flatpickr(refs.input, options);
   function addLeadingZero(value) {
     return value.toString().padStart(2, '0');
   }
+
+  refs.btnStart.addEventListener('click', onTiimerClick); 
+
+  function onTiimerClick() {
+    const intervalId = setInterval(() => {
+      let diffTime = new Date(refs.input.value) - new Date();
+      let selectTime = convertMs(diffTime);
+      const { days, hours, minutes, seconds } = selectTime;
+      console.log(selectTime);
+  
+      if (diffTime > 0) {
+      refs.days.textContent = days;
+      refs.hours.textContent = hours;
+      refs.minutes.textContent = minutes;
+      refs.seconds.textContent = seconds;
+      } else {
+        clearInterval(intervalId);
+        refs.btnStart.disabled = true;
+        Notify.success('Time is over', {
+          position: 'right-bottom',
+          timeout: 2000,
+        });
+      }
+    }, 1000);  
+  };
+  
+
 
 
